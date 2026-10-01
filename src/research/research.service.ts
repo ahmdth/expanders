@@ -15,7 +15,11 @@ export class ResearchService {
 
   async upload(user: AuthUser, dto: UploadResearchDto) {
     await this.projects.findOneAuthorized(user, dto.projectId); // 404 if not yours
-    return this.model.create({ ...dto, tags: dto.tags ?? [], uploadedBy: user.userId });
+    return this.model.create({
+      ...dto,
+      tags: dto.tags ?? [],
+      uploadedBy: user.userId,
+    });
   }
 
   async search(user: AuthUser, q: SearchResearchDto) {
@@ -38,7 +42,10 @@ export class ResearchService {
     );
     query.sort(q.q ? { score: { $meta: 'textScore' } } : { createdAt: -1 });
     const [items, total] = await Promise.all([
-      query.skip((page - 1) * limit).limit(limit).lean(),
+      query
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
       this.model.countDocuments(filter),
     ]);
     return { total, page, limit, items };

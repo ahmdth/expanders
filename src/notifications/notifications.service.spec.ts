@@ -10,7 +10,12 @@ describe('NotificationsService (@nestjs/mail with the in-memory transport)', () 
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [MailModule.forRoot({ transport: mailbox, from: 'Expanders360 <no-reply@expanders360.com>' })],
+      imports: [
+        MailModule.forRoot({
+          transport: mailbox,
+          from: 'Expanders360 <no-reply@expanders360.com>',
+        }),
+      ],
       providers: [NewMatchMail, NotificationsService],
     }).compile();
     await moduleRef.init();
@@ -20,9 +25,17 @@ describe('NotificationsService (@nestjs/mail with the in-memory transport)', () 
   beforeEach(() => mailbox.clear());
 
   it('emails the client about a new match', async () => {
-    await notifications.notifyNewMatch('founder@acme.io', { projectId: 4, country: 'DE', vendorName: 'Berlin Partners', score: 11.5 });
+    await notifications.notifyNewMatch('founder@acme.io', {
+      projectId: 4,
+      country: 'DE',
+      vendorName: 'Berlin Partners',
+      score: 11.5,
+    });
 
-    const mail = mailbox.assertSent({ to: 'founder@acme.io', mail: NewMatchMail });
+    const mail = mailbox.assertSent({
+      to: 'founder@acme.io',
+      mail: NewMatchMail,
+    });
     expect(mail.subject).toBe('New vendor match for your DE expansion project');
     expect(mail.html).toContain('Berlin Partners');
     expect(mail.text).toContain('project #4');
@@ -30,16 +43,28 @@ describe('NotificationsService (@nestjs/mail with the in-memory transport)', () 
   });
 
   it('escapes vendor names (user data) in the HTML body', async () => {
-    await notifications.notifyNewMatch('founder@acme.io', { projectId: 1, country: 'DE', vendorName: '<script>alert(1)</script>', score: 5 });
+    await notifications.notifyNewMatch('founder@acme.io', {
+      projectId: 1,
+      country: 'DE',
+      vendorName: '<script>alert(1)</script>',
+      score: 5,
+    });
     const { html } = mailbox.assertSent({ to: 'founder@acme.io' });
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;');
   });
 
   it('swallows delivery failures so matching never breaks', async () => {
-    mailbox.failNext(new MailSmtpError('RCPT TO', { code: 550, text: 'User unknown' }));
+    mailbox.failNext(
+      new MailSmtpError('RCPT TO', { code: 550, text: 'User unknown' }),
+    );
     await expect(
-      notifications.notifyNewMatch('ghost@acme.io', { projectId: 1, country: 'DE', vendorName: 'V', score: 1 }),
+      notifications.notifyNewMatch('ghost@acme.io', {
+        projectId: 1,
+        country: 'DE',
+        vendorName: 'V',
+        score: 1,
+      }),
     ).resolves.toBeUndefined();
     mailbox.assertNotSent();
   });

@@ -4,8 +4,18 @@ import { Role } from '../common/role.enum.js';
 import { ProjectPolicy } from '../projects/project.policy.js';
 import { AdminPolicy } from './admin.policy.js';
 
-const client = (clientId: number): AuthUser => ({ userId: 1, email: 'c@x.io', role: Role.CLIENT, clientId });
-const admin: AuthUser = { userId: 2, email: 'a@x.io', role: Role.ADMIN, clientId: null };
+const client = (clientId: number): AuthUser => ({
+  userId: 1,
+  email: 'c@x.io',
+  role: Role.CLIENT,
+  clientId,
+});
+const admin: AuthUser = {
+  userId: 2,
+  email: 'a@x.io',
+  role: Role.ADMIN,
+  clientId: null,
+};
 
 describe('AdminPolicy', () => {
   const policy = new AdminPolicy();
@@ -28,7 +38,9 @@ describe('ProjectPolicy', () => {
     expect(policy.access(client(10), { clientId: 11 })).toBe(false);
   });
   it('access: a user without a client reaches nothing', () => {
-    expect(policy.access({ ...client(1), clientId: null }, { clientId: 1 })).toBe(false);
+    expect(
+      policy.access({ ...client(1), clientId: null }, { clientId: 1 }),
+    ).toBe(false);
   });
   it('viewAll: clients never (admins get it from before())', () => {
     expect(policy.viewAll(client(1))).toBe(false);

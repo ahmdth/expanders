@@ -11,11 +11,17 @@ import { SchedulerService } from './scheduler.service.js';
 export class SchedulerController {
   constructor(private jobs: SchedulerService) {}
 
-  @Post('refresh-matches') @HttpCode(200)
+  @Post('refresh-matches')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Run the daily match refresh now' })
-  refresh() { return this.jobs.refreshActiveProjects(true); }
+  refresh() {
+    return this.jobs.refreshActiveProjects(true);
+  }
 
-  @Post('flag-slas') @HttpCode(200)
+  @Post('flag-slas')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Run the SLA-expiry flagging now' })
-  flag() { return this.jobs.flagExpiredSlas(true); }
+  flag() {
+    return this.jobs.flagExpiredSlas(true);
+  }
 }

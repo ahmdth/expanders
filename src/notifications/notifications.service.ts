@@ -13,7 +13,9 @@ export class NotificationsService {
     try {
       await this.mailer.send(NewMatchMail, { to, data: match });
     } catch (e) {
-      this.logger.error(`Failed to email ${to} about project ${match.projectId}: ${(e as Error).message}`);
+      this.logger.error(
+        `Failed to email ${to} about project ${match.projectId}: ${(e as Error).message}`,
+      );
     }
   }
 }

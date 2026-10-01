@@ -9,7 +9,8 @@ import { Vendor } from '../vendors/vendor.entity.js';
 import { Match } from './match.entity.js';
 
 /** Faster responders score higher: <=12h → 3, <=24h → 2, <=48h → 1, otherwise 0. */
-export const slaWeight = (hours: number) => (hours <= 12 ? 3 : hours <= 24 ? 2 : hours <= 48 ? 1 : 0);
+export const slaWeight = (hours: number) =>
+  hours <= 12 ? 3 : hours <= 24 ? 2 : hours <= 48 ? 1 : 0;
 
 @Injectable()
 export class MatchesService {
@@ -37,7 +38,9 @@ export class MatchesService {
     // 1. Candidate selection in MySQL (JSON_CONTAINS for country, JSON_OVERLAPS for services)
     const candidates = await this.vendors
       .createQueryBuilder('v')
-      .where('JSON_CONTAINS(v.countriesSupported, JSON_QUOTE(:country))', { country: project.country })
+      .where('JSON_CONTAINS(v.countriesSupported, JSON_QUOTE(:country))', {
+        country: project.country,
+      })
       .andWhere('JSON_OVERLAPS(v.servicesOffered, CAST(:services AS JSON))', {
         services: JSON.stringify(project.servicesNeeded),
       })
@@ -47,25 +50,50 @@ export class MatchesService {
     // 2. Scoring
     const needed = new Set(project.servicesNeeded);
     const scored = candidates.map((v) => {
-      const servicesOverlap = v.servicesOffered.filter((s) => needed.has(s)).length;
-      const score = Number((servicesOverlap * 2 + Number(v.rating) + slaWeight(v.responseSlaHours)).toFixed(2));
+      const servicesOverlap = v.servicesOffered.filter((s) =>
+        needed.has(s),
+      ).length;
+      const score = Number(
+        (
+          servicesOverlap * 2 +
+          Number(v.rating) +
+          slaWeight(v.responseSlaHours)
+        ).toFixed(2),
+      );
       return { vendor: v, servicesOverlap, score };
     });
 
     // 3. Idempotent upsert + prune stale matches
-    const before = new Set((await this.matches.find({ where: { projectId: project.id } })).map((m) => m.vendorId));
+    const before = new Set(
+      (await this.matches.find({ where: { projectId: project.id } })).map(
+        (m) => m.vendorId,
+      ),
+    );
     const now = new Date();
     if (scored.length) {
       await this.matches
         .createQueryBuilder()
         .insert()
         .into(Match)
-        .values(scored.map((s) => ({ projectId: project.id, vendorId: s.vendor.id, score: s.score, updatedAt: now })))
+        .values(
+          scored.map((s) => ({
+            projectId: project.id,
+            vendorId: s.vendor.id,
+            score: s.score,
+            updatedAt: now,
+          })),
+        )
         .orUpdate(['score', 'updated_at'], ['project_id', 'vendor_id'])
         .execute();
     }
-    const qb = this.matches.createQueryBuilder().delete().where('project_id = :pid', { pid: project.id });
-    if (scored.length) qb.andWhere('vendor_id NOT IN (:...ids)', { ids: scored.map((s) => s.vendor.id) });
+    const qb = this.matches
+      .createQueryBuilder()
+      .delete()
+      .where('project_id = :pid', { pid: project.id });
+    if (scored.length)
+      qb.andWhere('vendor_id NOT IN (:...ids)', {
+        ids: scored.map((s) => s.vendor.id),
+      });
     const removed = (await qb.execute()).affected ?? 0;
 
     // 4. Notify only for pairs that did not exist before
@@ -84,7 +112,9 @@ export class MatchesService {
       );
     }
 
-    this.logger.log(`Project ${project.id}: ${scored.length} matches (${fresh.length} new, ${removed} removed)`);
+    this.logger.log(
+      `Project ${project.id}: ${scored.length} matches (${fresh.length} new, ${removed} removed)`,
+    );
     return {
       projectId: project.id,
       total: scored.length,
@@ -92,12 +122,21 @@ export class MatchesService {
       removed,
       matches: scored
         .sort((a, b) => b.score - a.score)
-        .map((s) => ({ vendorId: s.vendor.id, vendorName: s.vendor.name, servicesOverlap: s.servicesOverlap, score: s.score })),
+        .map((s) => ({
+          vendorId: s.vendor.id,
+          vendorName: s.vendor.name,
+          servicesOverlap: s.servicesOverlap,
+          score: s.score,
+        })),
     };
   }
 
   async list(user: AuthUser, projectId: number) {
     await this.projects.findOneAuthorized(user, projectId);
-    return this.matches.find({ where: { projectId }, relations: { vendor: true }, order: { score: 'DESC' } });
+    return this.matches.find({
+      where: { projectId },
+      relations: { vendor: true },
+      order: { score: 'DESC' },
+    });
   }
 }

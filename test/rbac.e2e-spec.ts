@@ -17,7 +17,12 @@ import { User } from '../src/users/user.entity.js';
 import { VendorsController } from '../src/vendors/vendors.controller.js';
 import { VendorsService } from '../src/vendors/vendors.service.js';
 
-const JWT = { key: 'test-secret-test-secret-test-secret-123', issuer: 'expanders360-api', audience: 'expanders360-clients', ttl: '15m' as const };
+const JWT = {
+  key: 'test-secret-test-secret-test-secret-123',
+  issuer: 'expanders360-api',
+  audience: 'expanders360-clients',
+  ttl: '15m' as const,
+};
 const USERS: Record<number, Partial<User>> = {
   1: { id: 1, email: 'admin@x.io', role: Role.ADMIN, clientId: null },
   2: { id: 2, email: 'c@x.io', role: Role.CLIENT, clientId: 10 },
@@ -30,9 +35,13 @@ const USERS: Record<number, Partial<User>> = {
 describe('Auth & roles (HTTP)', () => {
   let app: INestApplication;
   const projectsSvc = { findAll: vi.fn(async () => [{ id: 1 }]) };
-  const authSvc = { register: vi.fn(async () => ({ accessToken: 't' })), login: vi.fn(async () => ({ accessToken: 't' })) };
+  const authSvc = {
+    register: vi.fn(async () => ({ accessToken: 't' })),
+    login: vi.fn(async () => ({ accessToken: 't' })),
+  };
   const signer = new JwtSigner(JWT);
-  const bearer = (sub: number | string, s = signer) => `Bearer ${s.sign({ sub: String(sub) })}`;
+  const bearer = (sub: number | string, s = signer) =>
+    `Bearer ${s.sign({ sub: String(sub) })}`;
 
   beforeAll(async () => {
     const mod = await Test.createTestingModule({
@@ -44,14 +53,25 @@ describe('Auth & roles (HTTP)', () => {
       controllers: [AuthController, VendorsController, ProjectsController],
       providers: [
         JwtAuth,
-        { provide: getRepositoryToken(User), useValue: { findOneBy: async ({ id }: { id: number }) => USERS[id] ?? null } },
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOneBy: async ({ id }: { id: number }) => USERS[id] ?? null,
+          },
+        },
         { provide: AuthService, useValue: authSvc },
         { provide: VendorsService, useValue: { findAll: async () => [] } },
         { provide: ProjectsService, useValue: projectsSvc },
       ],
     }).compile();
     app = mod.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
     await app.init();
   });
   afterAll(() => app.close());
@@ -63,10 +83,16 @@ describe('Auth & roles (HTTP)', () => {
     await http().get('/projects').expect(401);
   });
   it('rejects a token signed with another key (401)', async () => {
-    const forged = new JwtSigner({ ...JWT, key: 'another-secret-another-secret-12345678' });
-    await http().get('/vendors').set('authorization', bearer(1, forged)).expect(401);
+    const forged = new JwtSigner({
+      ...JWT,
+      key: 'another-secret-another-secret-12345678',
+    });
+    await http()
+      .get('/vendors')
+      .set('authorization', bearer(1, forged))
+      .expect(401);
   });
-  it("rejects a token whose user no longer exists (401)", async () => {
+  it('rejects a token whose user no longer exists (401)', async () => {
     await http().get('/projects').set('authorization', bearer(99)).expect(401);
   });
   it('blocks clients from admin routes (403)', async () => {
@@ -82,20 +108,50 @@ describe('Auth & roles (HTTP)', () => {
   });
   it('passes the caller identity (role + clientId) to services', async () => {
     await http().get('/projects').set('authorization', bearer(2)).expect(200);
-    expect(projectsSvc.findAll).toHaveBeenCalledWith(expect.objectContaining({ role: Role.CLIENT, clientId: 10 }));
+    expect(projectsSvc.findAll).toHaveBeenCalledWith(
+      expect.objectContaining({ role: Role.CLIENT, clientId: 10 }),
+    );
   });
 
   describe('public auth routes + validation', () => {
     it('register/login need no token', async () => {
-      await http().post('/auth/register').send({ companyName: 'Acme', email: 'a@acme.io', password: 'password123' }).expect(201);
-      await http().post('/auth/login').send({ email: 'a@acme.io', password: 'x' }).expect(200);
+      await http()
+        .post('/auth/register')
+        .send({
+          companyName: 'Acme',
+          email: 'a@acme.io',
+          password: 'password123',
+        })
+        .expect(201);
+      await http()
+        .post('/auth/login')
+        .send({ email: 'a@acme.io', password: 'x' })
+        .expect(200);
     });
     it('rejects invalid payloads (400)', async () => {
-      await http().post('/auth/register').send({ companyName: 'Acme', email: 'not-an-email', password: 'password123' }).expect(400);
-      await http().post('/auth/register').send({ companyName: 'Acme', email: 'a@acme.io', password: 'short' }).expect(400);
+      await http()
+        .post('/auth/register')
+        .send({
+          companyName: 'Acme',
+          email: 'not-an-email',
+          password: 'password123',
+        })
+        .expect(400);
+      await http()
+        .post('/auth/register')
+        .send({ companyName: 'Acme', email: 'a@acme.io', password: 'short' })
+        .expect(400);
     });
     it('rejects unknown fields such as role escalation (400)', async () => {
-      await http().post('/auth/register').send({ companyName: 'Acme', email: 'a@acme.io', password: 'password123', role: 'admin' }).expect(400);
+      await http()
+        .post('/auth/register')
+        .send({
+          companyName: 'Acme',
+          email: 'a@acme.io',
+          password: 'password123',
+          role: 'admin',
+        })
+        .expect(400);
     });
   });
 });

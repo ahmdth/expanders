@@ -14,9 +14,11 @@ export class NewMatchMail implements Mailable<NewMatch> {
   render({ projectId, country, vendorName, score }: NewMatch) {
     return {
       subject: `New vendor match for your ${country} expansion project`,
-      html: html`
-        <p>Good news!</p>
-        <p><strong>${vendorName}</strong> was matched to project #${projectId} (${country}) with a score of <strong>${score}</strong>.</p>
+      html: html` <p>Good news!</p>
+        <p>
+          <strong>${vendorName}</strong> was matched to project #${projectId}
+          (${country}) with a score of <strong>${score}</strong>.
+        </p>
         <p>The Expanders360 team</p>`,
     };
   }

@@ -7,11 +7,19 @@ import { AppModule } from './app.module.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Expanders360 – Global Expansion Management API')
-    .setDescription('Clients, vendors and projects in MySQL; research documents in MongoDB; vendor matching and cross-DB analytics.')
+    .setDescription(
+      'Clients, vendors and projects in MySQL; research documents in MongoDB; vendor matching and cross-DB analytics.',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();

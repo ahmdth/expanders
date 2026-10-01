@@ -37,7 +37,9 @@ import { VendorsModule } from './vendors/vendors.module.js';
     }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (c: ConfigService) => ({ uri: c.getOrThrow<string>('MONGO_URI') }),
+      useFactory: (c: ConfigService) => ({
+        uri: c.getOrThrow<string>('MONGO_URI'),
+      }),
     }),
     ScheduleModule.forRoot(),
     // Authentication FIRST: its global guard must set request.user before authorization's guard reads it.
@@ -50,7 +52,9 @@ import { VendorsModule } from './vendors/vendors.module.js';
       inject: [ConfigService],
       useFactory: (c: ConfigService) => ({
         transport: mailTransport(c),
-        from: c.get<string>('MAIL_FROM') ?? 'Expanders360 <no-reply@expanders360.com>',
+        from:
+          c.get<string>('MAIL_FROM') ??
+          'Expanders360 <no-reply@expanders360.com>',
       }),
     }),
     AuthModule,

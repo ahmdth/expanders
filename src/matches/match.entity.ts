@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Project } from '../projects/project.entity.js';
 import { Vendor } from '../vendors/vendor.entity.js';
 import { decimalTransformer } from '../common/transformers.js';
@@ -15,8 +23,20 @@ export class Match {
   @ManyToOne(() => Vendor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'vendor_id' })
   vendor?: Vendor;
-  @Column({ type: 'decimal', precision: 6, scale: 2, transformer: decimalTransformer }) score: number;
+  @Column({
+    type: 'decimal',
+    precision: 6,
+    scale: 2,
+    transformer: decimalTransformer,
+  })
+  score: number;
   @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
   /** Bumped every time a rebuild re-scores this pair; analytics use it for the "last 30 days" window. */
-  @Index() @Column({ name: 'updated_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' }) updatedAt: Date;
+  @Index()
+  @Column({
+    name: 'updated_at',
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 }

@@ -18,7 +18,9 @@ export class ResearchController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Search documents by project, tag and/or full text' })
+  @ApiOperation({
+    summary: 'Search documents by project, tag and/or full text',
+  })
   search(@CurrentUser() u: AuthUser, @Query() q: SearchResearchDto) {
     return this.research.search(u, q);
   }

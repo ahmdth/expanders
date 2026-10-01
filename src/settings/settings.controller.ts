@@ -15,6 +15,10 @@ class SetConfigDto {
 @Controller('admin/configs')
 export class SettingsController {
   constructor(private settings: SettingsService) {}
-  @Get() all() { return this.settings.all(); }
-  @Put(':key') set(@Param('key') key: string, @Body() dto: SetConfigDto) { return this.settings.set(key, dto.value); }
+  @Get() all() {
+    return this.settings.all();
+  }
+  @Put(':key') set(@Param('key') key: string, @Body() dto: SetConfigDto) {
+    return this.settings.set(key, dto.value);
+  }
 }

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthenticationRegistry, JwtBearerProvider, type JwtClaims } from '@nestjs/authentication';
+import {
+  AuthenticationRegistry,
+  JwtBearerProvider,
+  type JwtClaims,
+} from '@nestjs/authentication';
 import { Repository } from 'typeorm';
 import { AuthUser } from '../common/auth-user.js';
 import { User } from '../users/user.entity.js';
@@ -23,6 +27,13 @@ export class JwtAuth extends JwtBearerProvider<AuthUser> {
     const id = Number(sub);
     if (!sub || !Number.isInteger(id)) return null;
     const user = await this.users.findOneBy({ id });
-    return user ? { userId: user.id, email: user.email, role: user.role, clientId: user.clientId } : null;
+    return user
+      ? {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+          clientId: user.clientId,
+        }
+      : null;
   }
 }

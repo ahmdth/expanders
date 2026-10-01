@@ -6,7 +6,12 @@ import { ResearchSchema, ResearchDocument } from './research.schema.js';
 import { ResearchService } from './research.service.js';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: ResearchDocument.name, schema: ResearchSchema }]), ProjectsModule],
+  imports: [
+    MongooseModule.forFeature([
+      { name: ResearchDocument.name, schema: ResearchSchema },
+    ]),
+    ProjectsModule,
+  ],
   controllers: [ResearchController],
   providers: [ResearchService],
   exports: [ResearchService],

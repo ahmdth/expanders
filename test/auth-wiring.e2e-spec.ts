@@ -15,15 +15,30 @@ describe('AuthService DI wiring', () => {
     const saved: any[] = [];
     const moduleRef = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true, load: [() => ({ JWT_SECRET: 'wiring-test-secret-wiring-test-secret-1' })] }),
+        ConfigModule.forRoot({
+          isGlobal: true,
+          ignoreEnvFile: true,
+          load: [
+            () => ({ JWT_SECRET: 'wiring-test-secret-wiring-test-secret-1' }),
+          ],
+        }),
         AuthenticationModule.forRootAsync({
           inject: [ConfigService],
-          useFactory: (c: ConfigService) => ({ accessToken: buildJwtOptions(c), password: { logN: 10 } }),
+          useFactory: (c: ConfigService) => ({
+            accessToken: buildJwtOptions(c),
+            password: { logN: 10 },
+          }),
         }),
       ],
       providers: [
         AuthService,
-        { provide: getRepositoryToken(User), useValue: { exists: async () => false, save: async (x: any) => saved.push(x) } },
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            exists: async () => false,
+            save: async (x: any) => saved.push(x),
+          },
+        },
         { provide: DataSource, useValue: {} },
       ],
     }).compile();
@@ -33,7 +48,9 @@ describe('AuthService DI wiring', () => {
     expect(moduleRef.get(AuthService)).toBeDefined();
     const hash = await hasher.hash('correct horse battery staple');
     expect(hash).toMatch(/^\$scrypt\$ln=10,/); // the module's `password` options are applied
-    expect(await hasher.verify('correct horse battery staple', hash)).toBe(true);
+    expect(await hasher.verify('correct horse battery staple', hash)).toBe(
+      true,
+    );
     expect(await hasher.verify('wrong', hash)).toBe(false);
     await moduleRef.close();
   });

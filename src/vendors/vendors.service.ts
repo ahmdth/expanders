@@ -10,7 +10,12 @@ export class VendorsService {
 
   private toEntity(dto: Partial<CreateVendorDto>) {
     const { slaExpiresAt, ...rest } = dto;
-    return { ...rest, ...(slaExpiresAt !== undefined ? { slaExpiresAt: new Date(slaExpiresAt) } : {}) };
+    return {
+      ...rest,
+      ...(slaExpiresAt !== undefined
+        ? { slaExpiresAt: new Date(slaExpiresAt) }
+        : {}),
+    };
   }
 
   create(dto: CreateVendorDto) {
@@ -29,7 +34,8 @@ export class VendorsService {
   async update(id: number, dto: UpdateVendorDto) {
     const v = await this.findOne(id);
     Object.assign(v, this.toEntity(dto));
-    if (dto.slaExpiresAt !== undefined) v.slaExpired = !!v.slaExpiresAt && v.slaExpiresAt < new Date();
+    if (dto.slaExpiresAt !== undefined)
+      v.slaExpired = !!v.slaExpiresAt && v.slaExpiresAt < new Date();
     return this.repo.save(v);
   }
   async remove(id: number) {
@@ -41,12 +47,18 @@ export class VendorsService {
   /** Scheduler: flag vendors whose SLA lapsed, un-flag ones that were renewed. */
   async syncSlaFlags() {
     const now = new Date();
-    const flagged = await this.repo.update({ slaExpired: false, slaExpiresAt: LessThan(now) }, { slaExpired: true });
+    const flagged = await this.repo.update(
+      { slaExpired: false, slaExpiresAt: LessThan(now) },
+      { slaExpired: true },
+    );
     const cleared = await this.repo
       .createQueryBuilder()
       .update(Vendor)
       .set({ slaExpired: false })
-      .where('sla_expired = true AND (sla_expires_at IS NULL OR sla_expires_at >= :now)', { now })
+      .where(
+        'sla_expired = true AND (sla_expires_at IS NULL OR sla_expires_at >= :now)',
+        { now },
+      )
       .execute();
     return { flagged: flagged.affected ?? 0, cleared: cleared.affected ?? 0 };
   }

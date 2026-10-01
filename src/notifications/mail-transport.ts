@@ -1,5 +1,10 @@
 import { ConfigService } from '@nestjs/config';
-import { FileMailTransport, LogMailTransport, SmtpTransport, type MailTransport } from '@nestjs/mail';
+import {
+  FileMailTransport,
+  LogMailTransport,
+  SmtpTransport,
+  type MailTransport,
+} from '@nestjs/mail';
 
 type StartTls = 'required' | 'opportunistic' | 'never';
 
@@ -16,21 +21,30 @@ export function mailTransport(config: ConfigService): MailTransport {
     case 'log':
       return new LogMailTransport();
     case 'file':
-      return new FileMailTransport({ directory: config.get<string>('MAIL_DIRECTORY') || 'var/mail' });
+      return new FileMailTransport({
+        directory: config.get<string>('MAIL_DIRECTORY') || 'var/mail',
+      });
     case 'smtp': {
       const host = config.get<string>('SMTP_HOST');
-      if (!host) throw new Error('SMTP_HOST is required when MAIL_TRANSPORT is "smtp"');
+      if (!host)
+        throw new Error('SMTP_HOST is required when MAIL_TRANSPORT is "smtp"');
       const user = config.get<string>('SMTP_USER');
       return new SmtpTransport({
         host,
         port: Number(config.get<string>('SMTP_PORT') || 587),
         // 'never' for a local catch-all such as MailHog; keep 'required' (default) for real providers
-        ...(config.get<string>('SMTP_STARTTLS') && { startTls: config.get<string>('SMTP_STARTTLS') as StartTls }),
-        ...(user && { auth: { user, pass: config.get<string>('SMTP_PASS') ?? '' } }),
+        ...(config.get<string>('SMTP_STARTTLS') && {
+          startTls: config.get<string>('SMTP_STARTTLS') as StartTls,
+        }),
+        ...(user && {
+          auth: { user, pass: config.get<string>('SMTP_PASS') ?? '' },
+        }),
         pool: true,
       });
     }
     default:
-      throw new Error(`MAIL_TRANSPORT must be "log", "file" or "smtp" (got "${kind}")`);
+      throw new Error(
+        `MAIL_TRANSPORT must be "log", "file" or "smtp" (got "${kind}")`,
+      );
   }
 }

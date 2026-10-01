@@ -1,4 +1,11 @@
-import { Controller, Get, HttpCode, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@nestjs/authentication';
 import { AuthUser } from '../common/auth-user.js';
@@ -12,13 +19,17 @@ export class MatchesController {
 
   @Post('rebuild')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Rebuild vendor matches for a project (idempotent upsert)' })
+  @ApiOperation({
+    summary: 'Rebuild vendor matches for a project (idempotent upsert)',
+  })
   rebuild(@CurrentUser() u: AuthUser, @Param('id', ParseIntPipe) id: number) {
     return this.matches.rebuildForUser(u, id);
   }
 
   @Get()
-  @ApiOperation({ summary: 'List stored matches for a project, best score first' })
+  @ApiOperation({
+    summary: 'List stored matches for a project, best score first',
+  })
   list(@CurrentUser() u: AuthUser, @Param('id', ParseIntPipe) id: number) {
     return this.matches.list(u, id);
   }

@@ -8,7 +8,11 @@ import { MatchesController } from './matches.controller.js';
 import { MatchesService } from './matches.service.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Match, Vendor]), ProjectsModule, NotificationsModule],
+  imports: [
+    TypeOrmModule.forFeature([Match, Vendor]),
+    ProjectsModule,
+    NotificationsModule,
+  ],
   controllers: [MatchesController],
   providers: [MatchesService],
   exports: [MatchesService],
