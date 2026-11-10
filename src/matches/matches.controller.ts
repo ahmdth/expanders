@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@nestjs/authentication';
-import { AuthUser } from '../common/auth-user.js';
+import { type AuthUser } from '../common/auth-user.js';
 import { MatchesService } from './matches.service.js';
 
 @ApiTags('Matches')

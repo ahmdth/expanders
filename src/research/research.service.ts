@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { QueryFilter, Model } from 'mongoose';
 import { AuthUser } from '../common/auth-user.js';
 import { ProjectsService } from '../projects/projects.service.js';
 import { SearchResearchDto, UploadResearchDto } from './research.dto.js';
@@ -23,7 +23,7 @@ export class ResearchService {
   }
 
   async search(user: AuthUser, q: SearchResearchDto) {
-    const filter: FilterQuery<ResearchDocument> = {};
+    const filter: QueryFilter<ResearchDocument> = {};
     if (q.projectId !== undefined) {
       await this.projects.findOneAuthorized(user, q.projectId);
       filter.projectId = q.projectId;

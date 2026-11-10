@@ -35,18 +35,21 @@ Backend for **Expanders360**, a platform that helps founders run expansion proje
 flowchart LR
     Client([HTTP client]) -->|Bearer JWT| Guards
     subgraph API[NestJS API]
-      Guards[AuthenticationGuard → AuthorizationGuard<br/>JwtAuth · @Can policies] --> Controllers
-      Controllers --> Services
-      Services --> Matching[MatchesService]
-      Services --> Analytics[AnalyticsService]
-      Cron[SchedulerService<br/>01:00 SLA flags · 02:00 refresh] --> Matching
-      Matching --> Mail[NotificationsService<br/>@nestjs/mail]
+        Guards["AuthenticationGuard → AuthorizationGuard<br/>JwtAuth · @Can policies"] --> Controllers
+        Controllers --> Services
+        Services --> Matching[MatchesService]
+        Services --> Analytics[AnalyticsService]
+        Cron["SchedulerService<br/>01:00 SLA flags · 02:00 refresh"] --> Matching
+        Matching --> Mail["NotificationsService<br/>@nestjs/mail"]
     end
-    Services -->|TypeORM| MySQL[(MySQL 8<br/>clients · users · projects<br/>vendors · matches · configs)]
-    Services -->|Mongoose| Mongo[(MongoDB 7<br/>research_documents)]
-    Analytics -. joins in service layer .-> MySQL
-    Analytics -. joins in service layer .-> Mongo
-    Mail --> SMTP[(SMTP / MailHog)]
+
+    Services -->|TypeORM| MySQL[("MySQL 8<br/>clients · users · projects<br/>vendors · matches · configs")]
+    Services -->|Mongoose| Mongo[("MongoDB 7<br/>research_documents")]
+
+    Analytics -.->|joins in service layer| MySQL
+    Analytics -.->|joins in service layer| Mongo
+
+    Mail --> SMTP[("SMTP / MailHog")]
 ```
 
 **Request pipeline.** `AuthenticationModule` registers a global guard that verifies the JWT and loads the user from MySQL into `request.user`. `AuthorizationModule` registers a second global guard that enforces `@Can(...)`. Authentication **must be imported before** authorization in `AppModule`. Every route requires a token unless marked `@Public()`.

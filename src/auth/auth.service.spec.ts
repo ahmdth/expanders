@@ -49,9 +49,9 @@ describe('AuthService (scrypt via PasswordHasher, JWT via JwtSigner)', () => {
       ([e]: any) => e.name === 'User',
     )[1];
     expect(userArg.email).toBe('founder@acme.io');
-    expect(userArg.passwordHash).toMatch(/^\$scrypt\$/);
-    expect(userArg.passwordHash).not.toContain('password123');
-    expect(await hasher.verify('password123', userArg.passwordHash)).toBe(true);
+    expect(userArg.password).toMatch(/^\$scrypt\$/);
+    expect(userArg.password).not.toContain('password123');
+    expect(await hasher.verify('password123', userArg.password)).toBe(true);
 
     const claims = claimsOf(res.accessToken);
     expect(claims.sub).toBe('3');
@@ -77,7 +77,7 @@ describe('AuthService (scrypt via PasswordHasher, JWT via JwtSigner)', () => {
       email: 'a@a.io',
       role: Role.CLIENT,
       clientId: 1,
-      passwordHash: await hasher.hash('s3cret-pass'),
+      password: await hasher.hash('s3cret-pass'),
     };
     const res = await service.login({
       email: 'A@a.io',
@@ -93,7 +93,7 @@ describe('AuthService (scrypt via PasswordHasher, JWT via JwtSigner)', () => {
       email: 'a@a.io',
       role: Role.CLIENT,
       clientId: 1,
-      passwordHash: await hasher.hash('s3cret-pass'),
+      password: await hasher.hash('s3cret-pass'),
     };
     await expect(
       service.login({ email: 'a@a.io', password: 'nope' }),
@@ -119,11 +119,11 @@ describe('AuthService (scrypt via PasswordHasher, JWT via JwtSigner)', () => {
       email: 'a@a.io',
       role: Role.CLIENT,
       clientId: 1,
-      passwordHash: await weak.hash('s3cret-pass'),
+      password: await weak.hash('s3cret-pass'),
     };
     await strongerService.login({ email: 'a@a.io', password: 's3cret-pass' });
     expect(users.update).toHaveBeenCalledWith(5, {
-      passwordHash: expect.stringMatching(/^\$scrypt\$ln=11/),
+      password: expect.stringMatching(/^\$scrypt\$ln=11/),
     });
   });
 });

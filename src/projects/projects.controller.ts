@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@nestjs/authentication';
-import { AuthUser } from '../common/auth-user.js';
+import { type AuthUser } from '../common/auth-user.js';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto.js';
 import { ProjectsService } from './projects.service.js';
 
@@ -39,7 +39,7 @@ export class ProjectsController {
     @CurrentUser() u: AuthUser,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const { client, ...project } = await this.projects.findOneAuthorized(u, id);
+    const { ...project } = await this.projects.findOneAuthorized(u, id);
     return project;
   }
 

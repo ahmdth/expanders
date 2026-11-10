@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@nestjs/authentication';
-import { AuthUser } from '../common/auth-user.js';
 import { SearchResearchDto, UploadResearchDto } from './research.dto.js';
 import { ResearchService } from './research.service.js';
+import { type AuthUser } from '../common/auth-user.js';
 
 @ApiTags('Research documents (MongoDB)')
 @ApiBearerAuth()

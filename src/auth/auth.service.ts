@@ -38,7 +38,7 @@ export class AuthService implements OnModuleInit {
     await this.users.save(
       this.users.create({
         email: email.toLowerCase(),
-        passwordHash: await this.hasher.hash(password),
+        password: await this.hasher.hash(password),
         role: Role.ADMIN,
         clientId: null,
       }),
@@ -60,7 +60,7 @@ export class AuthService implements OnModuleInit {
         User,
         m.create(User, {
           email,
-          passwordHash,
+          password: passwordHash,
           role: Role.CLIENT,
           clientId: client.id,
         }),
@@ -74,11 +74,11 @@ export class AuthService implements OnModuleInit {
       where: { email: dto.email.toLowerCase() },
     });
     // verify() with an unknown user checks a dummy hash, so timing doesn't reveal which emails exist
-    const valid = await this.hasher.verify(dto.password, user?.passwordHash);
+    const valid = await this.hasher.verify(dto.password, user?.password);
     if (!user || !valid) throw new UnauthorizedException('Invalid credentials');
-    if (this.hasher.needsRehash(user.passwordHash)) {
+    if (this.hasher.needsRehash(user.password)) {
       await this.users.update(user.id, {
-        passwordHash: await this.hasher.hash(dto.password),
+        password: await this.hasher.hash(dto.password),
       });
     }
     return this.token(user);
